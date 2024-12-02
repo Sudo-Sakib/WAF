@@ -1,0 +1,131 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block title %}Custom Rule{% endblock %}
+
+{% block content %}
+
+{% if session['role'] != 'admin' %}
+<div class="container mt-5">
+    <div class="alert alert-danger text-center" role="alert">
+        <h4 class="alert-heading">Access Denied</h4>
+        <p>You do not have the required permissions to manage custom rules.</p>
+        <hr>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+    </div>
+</div>
+{% else %}
+
+<div class="container my-4">
+    <h2>Create Custom Rule</h2>
+    <form id="customRuleForm">
+        <div class="mb-3">
+            <label for="ruleName" class="form-label">Rule Name</label>
+            <input type="text" id="ruleName" class="form-control" placeholder="Enter rule name" required>
+        </div>
+        <div class="mb-3">
+            <label for="rulePattern" class="form-label">Regex Pattern</label>
+            <input type="text" id="rulePattern" class="form-control" placeholder="Enter regex pattern" required>
+        </div>
+        <div class="mb-3">
+            <label for="ruleDescription" class="form-label">Description</label>
+            <textarea id="ruleDescription" class="form-control" rows="3" placeholder="Description"></textarea>
+        </div>
+        <button type="submit" class="btn btn-success">Add Rule</button>
+    </form>
+</div>
+
+<div class="container my-4">
+    <h2>Manage Custom Rules</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Rule Name</th>
+                <th>Pattern</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="customRulesTable">
+            <!-- Dynamically populated -->
+        </tbody>
+    </table>
+</div>
+
+{% endif %}
+
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // Load existing custom rules
+    loadCustomRules();
+
+    // Handle form submission to add new rule
+    $('#customRuleForm').submit(function(event) {
+        event.preventDefault();
+
+        let ruleName = $('#ruleName').val();
+        let rulePattern = $('#rulePattern').val();
+        let ruleDescription = $('#ruleDescription').val();
+
+        $.ajax({
+            url: "{{ url_for('custom_rule.add_custom_rule') }}",
+            type: "POST",
+            data: {
+                name: ruleName,
+                pattern: rulePattern,
+                description: ruleDescription
+            },
+            success: function(response) {
+                alert(response.message);
+                // Reload rules
+                loadCustomRules();
+                $('#customRuleForm')[0].reset();
+            },
+            error: function(response) {
+                alert(response.responseJSON.error);
+            }
+        });
+    });
+
+    // Function to load and display custom rules
+    function loadCustomRules() {
+        $.get("{{ url_for('custom_rule.custom_rules') }}", function(data) {
+            let customRules = data.rules;
+            let tableContent = '';
+
+            customRules.forEach(function(rule, index) {
+                tableContent += `
+                    <tr>
+                        <td>${rule.name}</td>
+                        <td>${rule.pattern}</td>
+                        <td>${rule.description}</td>
+                        <td>
+                            <button class="btn btn-danger deleteRuleBtn" data-index="${index}">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            $('#customRulesTable').html(tableContent);
+
+            // Handle rule deletion
+            $('.deleteRuleBtn').click(function() {
+                let index = $(this).data('index');
+                deleteCustomRule(index);
+            });
+        });
+    }
+
+    // Function to delete a custom rule
+    function deleteCustomRule(index) {
+        $.post("{{ url_for('custom_rule.delete_custom_rule') }}", { index: index }, function(response) {
+            alert(response.message);
+            loadCustomRules();
+        }).fail(function(response) {
+            alert(response.responseJSON.error);
+        });
+    }
+});
+</script>
+
+{% endblock %}

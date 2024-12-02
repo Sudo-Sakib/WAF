@@ -1,0 +1,77 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block title %}WAF Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- Main Container -->
+<div class="container my-5">
+    <h1 class="text-center mb-4">WAF Traffic Dashboard</h1>
+    <h3 class="text-center">Welcome, <strong>{{ session['username'] }}</strong>!</h3>
+
+    <!--- Chart Section-->
+    <section class="mt-5 container">
+        <div class="charts">
+            <div>
+                <h3>Attack Distribution</h3>
+                <canvas id="pieChart"></canvas>
+            </div>
+            <div>
+                <h3>Attack Counts by Type</h3>
+                <canvas id="barChart"></canvas>
+            </div>
+        </div>
+        
+    </section>
+    <!-- Chart Section End -->
+
+    <!-- Traffic Summary Section -->
+    <section class="mt-5">
+        <div class="row text-center">
+            <div class="col-md-4">
+                <div class="card shadow-sm p-3">
+                    <h4>Blocked Attacks</h4>
+                    <p id="blocked-attacks" class="fs-1 text-danger">Loading...</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm p-3">
+                    <h4>Allowed Requests</h4>
+                    <p id="allowed-requests" class="fs-1 text-success">Loading...</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm p-3">
+                    <h4>Blocked IPs</h4>
+                    <p id="blocked-ips-count" class="fs-1 text-warning">Loading...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Rules Management Section -->
+    <section class="mt-5">
+        <h2>Manage Rules</h2>
+        <p>Easily add custom rules to filter malicious requests and protect your web applications.</p>
+        <div class="text-center">
+            <a href="{{ url_for('custom_rule.custom_rule') }}" class="btn btn-success">Create New Rule</a>
+        </div>
+    </section>
+
+    <!-- Block IP Section -->
+    <section class="mt-5">
+        <h2>Manage IPs</h2>
+        <p>Block specific IPs dynamically to enhance security.</p>
+        <div class="text-center">
+            <a href="{{ url_for('ip.block_ip_form') }}" class="btn btn-danger">Block IP</a>
+        </div>
+    </section>
+    <section class="mt-5">
+        <h2>Blocked IPs</h2>
+        <ul id="blocked-ips-list" class="list-group">
+            <li class="list-group-item text-muted">Loading blocked IPs...</li>
+        </ul>
+    </section>
+</div>
+
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends 'auth/layouts/base.html' %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+    
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white text-center">
+                        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Secure Login" class="svg-graphic">
+                        <h3>Register</h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Display Flash Messages -->
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                        <div>
+                            {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                    
+                        <form method="POST">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+                                <div id="passwordStrengthMessage" class="form-text"></div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="role" class="form-label">Role</label>
+                                <select class="form-select" id="role" name="role" required>
+                                    <option value="user" selected>User</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Register</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-footer text-center">
+                        <small>Already have an account? <a href="{{ url_for('auth.login') }}" class="text-primary">Log in</a></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+
+    <!-- Bootstrap JS (Optional, for interactive components) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Password Strength checking -->
+    <script>
+        const passwordField = document.getElementById('password');
+        const strengthMessage = document.getElementById('passwordStrengthMessage');
+    
+        passwordField.addEventListener('input', () => {
+            const password = passwordField.value;
+            if (password.length < 8) {
+                strengthMessage.textContent = 'Password is too short (minimum 8 characters)';
+                strengthMessage.style.color = 'red';
+            } else if (!/[A-Z]/.test(password)) {
+                strengthMessage.textContent = 'Password must include at least one uppercase letter';
+                strengthMessage.style.color = 'red';
+            } else if (!/[a-z]/.test(password)) {
+                strengthMessage.textContent = 'Password must include at least one lowercase letter';
+                strengthMessage.style.color = 'red';
+            } else if (!/[0-9]/.test(password)) {
+                strengthMessage.textContent = 'Password must include at least one digit';
+                strengthMessage.style.color = 'red';
+            } else if (!/[!@#$%^&*]/.test(password)) {
+                strengthMessage.textContent = 'Password must include at least one special character (!@#$%^&*)';
+                strengthMessage.style.color = 'red';
+            } else {
+                strengthMessage.textContent = 'Strong password!';
+                strengthMessage.style.color = 'green';
+            }
+        });
+    </script>
+{% endblock %}

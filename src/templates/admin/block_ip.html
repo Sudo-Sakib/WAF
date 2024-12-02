@@ -1,0 +1,107 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block title %}Block IP{% endblock %}
+
+{% block content %}
+
+<!--Main Container-->
+    <div class="container mt-5">
+        <h2>Block an IP Address</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div>
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% endwith %}
+        <form method="POST">
+            <div class="mb-3">
+                <label for="ipAddress" class="form-label">IP Address</label>
+                <input type="text" class="form-control" id="ipAddress" name="ip_address" required>
+            </div>
+            <button type="submit" class="btn btn-danger">Block IP</button>
+        </form>
+        <div class="mt-4">
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+
+        <!-- Block IP Section -->
+    
+    <section class="mt-5">
+        <h2>Blocked IPs</h2>
+        <ul id="blocked-ips-list" class="list-group">
+            <li class="list-group-item text-muted">Loading blocked IPs...</li>
+        </ul>
+    </section>
+
+    </div>
+
+<!---Block IP--->
+<script>
+    async function loadBlockedIPs() {
+        try {
+            const response = await fetch('/ip/api/blocked-ips');
+            if (!response.ok) throw new Error('Failed to fetch blocked IPs');
+
+            const blockedIPs = await response.json();
+            const listElement = document.getElementById('blocked-ips-list');
+
+            // Clear the existing list
+            listElement.innerHTML = '';
+
+            // Populate the list with blocked IPs
+            if (blockedIPs.length === 0) {
+                const emptyMessage = document.createElement('li');
+                emptyMessage.textContent = "No IPs are currently blocked.";
+                emptyMessage.classList.add('list-group-item', 'text-muted');
+                listElement.appendChild(emptyMessage);
+            } else {
+                blockedIPs.forEach(ip => {
+                    const li = document.createElement('li');
+                    li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
+                    li.textContent = ip;
+
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = "Delete";
+                    deleteButton.classList.add('btn', 'btn-danger', 'btn-sm');
+                    deleteButton.onclick = () => deleteBlockedIP(ip);
+
+                    li.appendChild(deleteButton);
+                    listElement.appendChild(li);
+                });
+            }
+        } catch (error) {
+            console.error('Error loading blocked IPs:', error);
+        }
+    }
+
+    async function deleteBlockedIP(ip) {
+        if (confirm(`Are you sure you want to unblock IP: ${ip}?`)) {
+            try {
+                const response = await fetch(`/ip/api/delete-blocked-ip`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ip })
+                });
+
+                if (!response.ok) throw new Error('Failed to delete IP');
+
+                alert(`IP ${ip} has been unblocked.`);
+                loadBlockedIPs(); // Refresh the list
+            } catch (error) {
+                console.error('Error deleting blocked IP:', error);
+                alert('Failed to delete the IP. Please try again.');
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadBlockedIPs);
+</script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'user/layouts/base.html' %}
+
+{% block title %}User Logs{% endblock %}
+
+{% block content %}
+
+<div class="container my-5">
+    <h1 class="text-center mb-4">WAF Traffic Logs</h1>
+    
+    <!-- Filter Section -->
+    <div class="row mb-3">
+        <div class="col-12 col-md-6">
+            <input class="form-control" id="logFilter" type="text" placeholder="Filter logs by IP or Method">
+        </div>
+        <div class="col-12 col-md-6 text-md-end">
+            <button class="btn btn-primary" id="clearLogs">Clear Logs</button>
+        </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="table-responsive">
+        <table id="logTable" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>IP</th>
+                    <th>Method</th>
+                    <th>Payload</th>
+                    <th>Result</th>
+                </tr>
+            </thead>
+            <tbody id="logTableBody">
+                <!-- Table rows will be injected here dynamically -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination Section -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            <li class="page-item disabled" id="prevBtn">
+                <a class="page-link" href="#" tabindex="-1">Previous</a>
+            </li>
+            <li class="page-item" id="nextBtn">
+                <a class="page-link" href="#">Next</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+
+{% endblock %}

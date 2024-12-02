@@ -1,0 +1,148 @@
+{% extends 'admin/layouts/base.html' %}
+
+{% block title %}Logs{% endblock %}
+
+{% block content %}
+
+<div class="container my-5">
+    <h1 class="text-center mb-4">WAF Traffic Logs</h1>
+    
+    <!-- Filter Section -->
+    <div class="row mb-3">
+        <div class="col-12 col-md-6">
+            <input class="form-control" id="logFilter" type="text" placeholder="Filter logs by IP or Method">
+        </div>
+        <div class="col-12 col-md-6 text-md-end">
+            <button class="btn btn-primary" id="clearLogs">Clear Logs</button>
+        </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="table-responsive">
+        <table id="logTable" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>IP</th>
+                    <th>Method</th>
+                    <th>Payload</th>
+                    <th>Result</th>
+                </tr>
+            </thead>
+            <tbody id="logTableBody">
+                <!-- Table rows will be injected here dynamically -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination Section -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            <li class="page-item disabled" id="prevBtn">
+                <a class="page-link" href="#" tabindex="-1">Previous</a>
+            </li>
+            <li class="page-item" id="nextBtn">
+                <a class="page-link" href="#">Next</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<!-- Display Custom Rules -->
+
+<div class="container my-4">
+    <h2>Manage Custom Rules</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Rule Name</th>
+                <th>Pattern</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="customRulesTable">
+            
+        </tbody>
+    </table>
+</div>
+<div class="mb-4"></div>
+
+<!--- Custom Rule Display Ends ---->
+
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        // Load existing custom rules
+        loadCustomRules();
+    
+        // Handle form submission to add new rule
+        $('#customRuleForm').submit(function(event) {
+            event.preventDefault();
+    
+            let ruleName = $('#ruleName').val();
+            let rulePattern = $('#rulePattern').val();
+            let ruleDescription = $('#ruleDescription').val();
+    
+            $.ajax({
+                url: "{{ url_for('custom_rule.add_custom_rule') }}",
+                type: "POST",
+                data: {
+                    name: ruleName,
+                    pattern: rulePattern,
+                    description: ruleDescription
+                },
+                success: function(response) {
+                    alert(response.message);
+                    // Reload rules
+                    loadCustomRules();
+                    $('#customRuleForm')[0].reset();
+                },
+                error: function(response) {
+                    alert(response.responseJSON.error);
+                }
+            });
+        });
+    
+        // Function to load and display custom rules
+        function loadCustomRules() {
+            $.get("{{ url_for('custom_rule.custom_rules') }}", function(data) {
+                let customRules = data.rules;
+                let tableContent = '';
+    
+                customRules.forEach(function(rule, index) {
+                    tableContent += `
+                        <tr>
+                            <td>${rule.name}</td>
+                            <td>${rule.pattern}</td>
+                            <td>${rule.description}</td>
+                            <td>
+                                <button class="btn btn-danger deleteRuleBtn" data-index="${index}">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+    
+                $('#customRulesTable').html(tableContent);
+    
+                // Handle rule deletion
+                $('.deleteRuleBtn').click(function() {
+                    let index = $(this).data('index');
+                    deleteCustomRule(index);
+                });
+            });
+        }
+    
+        // Function to delete a custom rule
+        function deleteCustomRule(index) {
+            $.post("{{ url_for('custom_rule.delete_custom_rule') }}", { index: index }, function(response) {
+                alert(response.message);
+                loadCustomRules();
+            }).fail(function(response) {
+                alert(response.responseJSON.error);
+            });
+        }
+    });
+    </script>
+
+{% endblock %}
